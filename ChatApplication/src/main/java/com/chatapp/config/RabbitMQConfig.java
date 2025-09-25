@@ -1,6 +1,10 @@
 package com.chatapp.config;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +18,18 @@ public class RabbitMQConfig {
         return new DirectExchange(EXCHANGE_NAME);
     }
 
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
+    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        template.setMessageConverter(jsonMessageConverter());
+        return template;
+    }
+
     // Each user will have a queue bound to the direct exchange with their username as routing key
     @Bean
     Queue userQueue() {
@@ -24,4 +40,6 @@ public class RabbitMQConfig {
     Binding binding(Queue userQueue, DirectExchange exchange) {
         return BindingBuilder.bind(userQueue).to(exchange).with("user1"); // routing key = recipient id
     }
+
+    // Each user will have a queue bound to the direct exchange with their username as routing key
 }
