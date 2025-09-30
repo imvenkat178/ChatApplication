@@ -1,5 +1,6 @@
 package com.chatapp.controller;
 
+import com.chatapp.model.User;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,13 +20,7 @@ public class ChatController {
     @PostMapping("chat/send")
     public String sendMessage(
             @RequestBody ChatMessageDTO message) {
-        chatService.sendMessage(message.getTo(), message);
+        chatService.sendMessage(message);
         return "Message sent to " + message.getTo() + ": " + message;
-    }
-
-    @RabbitListener(queues = "user1.queue")
-    public void receive(ChatMessageDTO chatMessage) {
-        System.out.println("Message for User1 from "
-                + chatMessage.getFrom() + ": " + chatMessage.getMessage());
     }
 }
