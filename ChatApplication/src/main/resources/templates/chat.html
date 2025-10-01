@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Chat App</title>
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>Chat Application</h1>
+        <div class="user-info">
+            <span>Logged in as: <strong id="logged-user"></strong></span>
+            <span id="connection-status" class="connection-status">Connecting...</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="chat-body">
+        <div class="users-sidebar">
+            <div class="sidebar-header">
+                <h3>Users</h3>
+            </div>
+            <div class="users-list" id="users-list">
+                <div class="empty-state">Loading users...</div>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-area-header">
+                <h2 id="chat-with">Select a user to chat</h2>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <div class="no-selection">
+                    Select a user from the sidebar to start chatting
+                </div>
+            </div>
+
+            <div class="message-input-area">
+                <input type="text" id="message-input" class="message-input"
+                       placeholder="Type a message..." disabled>
+                <button id="send-btn" class="send-btn" disabled>Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/chat.js}"></script>
+</body>
+</html>

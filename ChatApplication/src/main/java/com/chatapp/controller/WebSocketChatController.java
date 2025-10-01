@@ -4,7 +4,6 @@ import com.chatapp.dto.ChatMessageDTO;
 import com.chatapp.service.ChatService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDateTime;
@@ -19,19 +18,16 @@ public class WebSocketChatController {
     }
 
     @MessageMapping("/chat.send")
-    public void sendMessage(@Payload ChatMessageDTO chatMessage,
-                            SimpMessageHeaderAccessor headerAccessor) {
-
-        String sender = headerAccessor.getUser().getName();
-        chatMessage.setFrom(sender);
+    public void sendMessage(@Payload ChatMessageDTO chatMessage) {
+        // Since we disabled authentication, get sender from message payload
+        // Client already sets "from" field from sessionStorage
 
         if (chatMessage.getTimestamp() == null) {
             chatMessage.setTimestamp(LocalDateTime.now());
         }
 
-        System.out.println("WebSocket message: " + sender + " -> " + chatMessage.getTo());
+        System.out.println("WebSocket message: " + chatMessage.getFrom() + " -> " + chatMessage.getTo());
 
-        // Publish to RabbitMQ
         chatService.sendMessage(chatMessage);
     }
 }

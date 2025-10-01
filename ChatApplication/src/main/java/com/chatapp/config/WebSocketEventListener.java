@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.util.Map;
+
 @Component
 public class WebSocketEventListener {
 
@@ -20,10 +22,25 @@ public class WebSocketEventListener {
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        if (headerAccessor.getUser() != null) {
-            String username = headerAccessor.getUser().getName();
+        // Try multiple ways to get username
+        String username = null;
+
+        // Method 1: From session attributes
+        Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
+        if (sessionAttributes != null) {
+            username = (String) sessionAttributes.get("username");
+        }
+
+        // Method 2: From STOMP headers
+        if (username == null) {
+            username = headerAccessor.getFirstNativeHeader("username");
+        }
+
+        if (username != null) {
             System.out.println("WebSocket CONNECTED: " + username);
             userService.startListenerForUser(username);
+        } else {
+            System.out.println("NO USERNAME found in WebSocket connection");
         }
     }
 
@@ -31,8 +48,13 @@ public class WebSocketEventListener {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        if (headerAccessor.getUser() != null) {
-            String username = headerAccessor.getUser().getName();
+        String username = null;
+        Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
+        if (sessionAttributes != null) {
+            username = (String) sessionAttributes.get("username");
+        }
+
+        if (username != null) {
             System.out.println("WebSocket DISCONNECTED: " + username);
             userService.stopListenerForUser(username);
         }

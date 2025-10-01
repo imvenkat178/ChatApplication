@@ -77,15 +77,12 @@ public class UserService {
     private void createUserQueueAndListener(String username) {
         String queueName = username + ".queue";
 
-        // Create Queue
         Queue queue = new Queue(queueName, true);
         amqpAdmin.declareQueue(queue);
 
-        // Bind Queue to Exchange
         Binding binding = BindingBuilder.bind(queue).to(chatExchange).with(username);
         amqpAdmin.declareBinding(binding);
 
-        // Create listener that pushes messages to WebSocket
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames(queueName);
@@ -96,16 +93,16 @@ public class UserService {
 
                 ChatMessageDTO chatMessage = objectMapper.readValue(body, ChatMessageDTO.class);
 
-                // PUSH TO WEBSOCKET
-                messagingTemplate.convertAndSendToUser(
-                        username,
-                        "/queue/messages",
+                // CHANGED: Send to a regular topic instead of user-specific
+                messagingTemplate.convertAndSend(
+                        "/topic/messages." + username,  // Topic specific to this user
                         chatMessage
                 );
 
                 System.out.println("Pushed to WebSocket: " + username);
 
             } catch (Exception e) {
+                System.err.println("Error processing message: " + e.getMessage());
                 e.printStackTrace();
             }
         });
